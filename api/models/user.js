@@ -1,12 +1,13 @@
 
 const mongoose = require('mongoose');
+const passport=require("passport");
 
 const userSchema =new mongoose.Schema({
-    firstname: {
+    name: {
         type: String,
         required: true,
     },
-    lastname: {
+    username: {
         type: String,
         required: true
     },
@@ -21,13 +22,15 @@ const userSchema =new mongoose.Schema({
         unique: true, 
         match: /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/
     },
-    password: { type: String, required: true },
-    confirmpassword: {
-        type: String,
-        required: true,
-        min: 8
+    password: { 
+        type: String, 
+        required: true
+     },
+
+    role:{
+        type:String,
+        require:true
     },
-    
     team:
         [{
         type: mongoose.Schema.Types.ObjectId,
@@ -37,5 +40,7 @@ const userSchema =new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+
 
 module.exports = mongoose.model('User', userSchema);

@@ -1,22 +1,22 @@
 const express = require("express");
 const userRouter = express.Router();
+const bodyparser = require("body-parser");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const checkAuth = require('../middleware/check-auth');
-const User = require('../models/user');
 
+const User = require("../models/user");
+userRouter.use (bodyparser.json());
 
-
-userRouter.post("/signup", (req, res, next) => {
+userRouter.route('/signup')
+.post((req, res, next) => {
   User.find({ email: req.body.email })
     .exec()
-    .then(user => {
+    .then((user) => {
       if (user.length >= 1) {
         return res.status(409).json({
           message: "Mail exists"
         });
-        res.redirect('/signup');
       } else {
         bcrypt.hash(req.body.password, 10, (err, hash) => {
           if (err) {
@@ -28,11 +28,14 @@ userRouter.post("/signup", (req, res, next) => {
               _id: new mongoose.Types.ObjectId(),
               email: req.body.email,
               password: hash,
-            
+              name:req.body.name,
+              username:req.body.username,
+              contact:req.body.contact,
+              role:req.body.role
             });
             user
               .save()
-              .then(result => {
+              .then((result) => {
                 console.log(result);
                 res.status(201).json({
                   message: "User created"
@@ -50,16 +53,17 @@ userRouter.post("/signup", (req, res, next) => {
     });
 });
 
-userRouter.post("/login", (req, res, next) => {
+userRouter.route('/login')
+.post( (req, res, next) => {
   User.find({ email: req.body.email })
     .exec()
-    .then(user => {
+    .then((user )=> {
       if (user.length < 1) {
         return res.status(401).json({
           message: "Auth failed"
         });
       }
-      bcrypt.compare(req.body.password, user[0].password, (err, result) => {
+      bcrypt.compare(req.body.password, user.password, (err, result) => {
         if (err) {
           return res.status(401).json({
             message: "Auth failed"
@@ -68,8 +72,9 @@ userRouter.post("/login", (req, res, next) => {
         if (result) {
           const token = jwt.sign(
             {
-              email: user[0].email,
-              userId: user[0]._id
+              email: user.email,
+              userId: use._id,
+              role:user.role
             },
             process.env.JWT_KEY,
             {
@@ -94,10 +99,11 @@ userRouter.post("/login", (req, res, next) => {
     });
 });
 
-userRouter.delete("/:userId", (req, res, next) => {
+userRouter.route('/userId')
+.delete( (req, res, next) => {
   User.remove({ _id: req.params.userId })
     .exec()
-    .then(result => {
+    .then((result) => {
       res.status(200).json({
         message: "User deleted"
       });
@@ -110,4 +116,4 @@ userRouter.delete("/:userId", (req, res, next) => {
     });
 });
 
-module.exports = userRouter;
+module.exports= userRouter;
